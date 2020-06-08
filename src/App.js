@@ -152,7 +152,7 @@ function App() {
 
   return (
     <div className="content">
-      <h1>Vizualization UE3</h1>
+      <h1>Vizualization UE3.1</h1>
       <Dropdown placeholder='Origin' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} value={origins}/>
       <Dropdown placeholder='Manufacturer' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection search options={manufacturersOptions} value={manufacturers}/>
       <Dropdown placeholder='X Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
