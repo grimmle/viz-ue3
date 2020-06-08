@@ -127,10 +127,10 @@ function App() {
   const [data, setData] = useState({});
   
   const handleSelect = (e, {value}, key) => {
-    if (key == "x") setX(value)
-    else if (key == "y") setY(value)
-    else if (key == "origins") setOrigins(value)
-    else if (key == "manufacturers") setManufacturers(value)
+    if (key === "x") setX(value)
+    else if (key === "y") setY(value)
+    else if (key === "origins") setOrigins(value)
+    else if (key === "manufacturers") setManufacturers(value)
   }
 
   useEffect(() => {
