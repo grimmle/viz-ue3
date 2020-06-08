@@ -56,6 +56,8 @@ MANUFACTURERS.forEach(function(value) {
 
 
 function getDataSets(data, x, y, o, m) {
+  console.log(o)
+  console.log(m)
   let america = {
       label: "American",
       backgroundColor: "rgba(255, 0, 0, 1)",
@@ -79,8 +81,6 @@ function getDataSets(data, x, y, o, m) {
       hoverRadius: '8',
       data: []
   }
-
-  let updateManufacturers = []
 
   data.split('\n').map(function (l) {
       let line = l.split(';')
@@ -110,17 +110,6 @@ function getDataSets(data, x, y, o, m) {
   return set;
 }
 
-function update(data, o) {
-  data.split('\n').map(function (l) {
-    let line = l.split(';')
-    let manus = [];
-    if(o.includes(line[9].trim())) {
-        if(!manus.includes(line[1].trim())) manus.push(line[1].trim())
-    }
-    return manus;
-  })
-}
-
 function App() {
   const [x, setX] = useState("weight");
   const [y, setY] = useState("horsepower");
@@ -144,14 +133,7 @@ function App() {
             datasets: DATA
         })
     });
-  }, [x, y, manufacturers]);
-
-  useEffect(() => {
-    loadCSV().then((csv) => {
-      let MANUS = update(csv, origins)
-      setManufacturers(MANUS)
-    })
-  }, [origins]);
+  }, [x, y, origins, manufacturers]);
 
 
 
