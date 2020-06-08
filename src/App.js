@@ -56,8 +56,6 @@ MANUFACTURERS.forEach(function(value) {
 
 
 function getDataSets(data, x, y, o, m) {
-  console.log(o)
-  console.log(m)
   let america = {
       label: "American",
       backgroundColor: "rgba(255, 0, 0, 1)",
@@ -81,6 +79,8 @@ function getDataSets(data, x, y, o, m) {
       hoverRadius: '8',
       data: []
   }
+
+  let updateManufacturers = []
 
   data.split('\n').map(function (l) {
       let line = l.split(';')
@@ -110,6 +110,17 @@ function getDataSets(data, x, y, o, m) {
   return set;
 }
 
+function update(data, o) {
+  data.split('\n').map(function (l) {
+    let line = l.split(';')
+    let manus = [];
+    if(o.includes(line[9].trim())) {
+        if(!manus.includes(line[1].trim())) manus.push(line[1].trim())
+    }
+    return manus;
+  })
+}
+
 function App() {
   const [x, setX] = useState("weight");
   const [y, setY] = useState("horsepower");
@@ -117,7 +128,7 @@ function App() {
   const [manufacturers, setManufacturers] = useState(MANUFACTURERS);
   const [data, setData] = useState({});
   
-  const handleSelect = ({value}, key) => {
+  const handleSelect = (e, {value}, key) => {
     console.log(key, value)
     if (key == "x") setX(value)
     else if (key == "y") setY(value)
@@ -133,17 +144,24 @@ function App() {
             datasets: DATA
         })
     });
-  }, [x, y, origins, manufacturers]);
+  }, [x, y, manufacturers]);
+
+  useEffect(() => {
+    loadCSV().then((csv) => {
+      let MANUS = update(csv, origins)
+      setManufacturers(MANUS)
+    })
+  }, [origins]);
 
 
 
   return (
     <div className="content">
       <h1>Vizualization UE3</h1>
-      <Dropdown placeholder='Origin' onChange={({ value }) => handleSelect({ value }, 'origins')} fluid multiple selection options={originsOptions} defaultValue={ORIGINS}/>
-      <Dropdown placeholder='Manufacturer' onChange={({ value }) => handleSelect({ value }, 'manufacturers')} fluid multiple selection options={manufacturersOptions} defaultValue={MANUFACTURERS}/>
-      <Dropdown placeholder='X Axis' onChange={({ value }) => handleSelect({ value }, 'x')} fluid selection options={axisOptions} value={x}/>
-      <Dropdown placeholder='Y Axis' onChange={({ value }) => handleSelect({ value }, 'y')} fluid selection options={axisOptions} value={y}/>
+      <Dropdown placeholder='Origin' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} defaultValue={ORIGINS}/>
+      <Dropdown placeholder='Manufacturer' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection options={manufacturersOptions} defaultValue={MANUFACTURERS}/>
+      <Dropdown placeholder='X Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
+      <Dropdown placeholder='Y Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
 
       {/* <Dropdown onSelect={(e) => handleSelect(e, "x")}>
         <Dropdown.Toggle variant="success" id="dropdown-basic">
