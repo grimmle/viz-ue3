@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Chart from './Chart';
-import { Button } from 'react-bootstrap';
 import { Dropdown } from 'semantic-ui-react'
+
+
+async function loadCSV() {
+  const res = await fetch("./cars.csv");
+  let data = await res.text();
+  return data;
+}
 
 export const CATEGORIES = {
   'consumption': 2,
@@ -14,11 +20,10 @@ export const CATEGORIES = {
   'year': 8
 }
 
-export const ORIGIN = {
-  'america': 0,
-  'europe': 1,
-  'japan': 2
-}
+export const ORIGINS = ['america', 'europe', 'japan'];
+
+export const MANUFACTURERS = ['chevrolet', 'buick', 'plymouth', 'amc', 'ford', 'pontiac', 'citroen', 'dodge', 'toyota', 'datsun', 'vw', 'peugeot', 'audi', 'saab', 'bmw', 'hi', 'mercury', 'fiat', 'oldsmobile', 'chrysler', 'mazda', 'volvo', 'renault', 'honda', 'subaru', 'capri', 'mercedes', 'cadillac', 'triumph', 'nissan'];
+
 
 let axisOptions = []
 for (var key in CATEGORIES) {
@@ -31,34 +36,114 @@ for (var key in CATEGORIES) {
   }
 }
 
-let originsOptions = [
-  { key: 'america', text:'america', value:'america'},
-  { key: 'europe', text: 'europe', value: 'europe' },
-  { key: 'japan', text: 'japan', value: 'japan' }
-]
+let originsOptions = []
+ORIGINS.forEach(function(value) {
+  var obj = {};
+  obj.key = value
+  obj.text = value
+  obj.value = value    
+  originsOptions.push(obj);
+})
+
+let manufacturersOptions = []
+MANUFACTURERS.forEach(function(value) {
+  var obj = {};
+  obj.key = value
+  obj.text = value
+  obj.value = value    
+  manufacturersOptions.push(obj);
+})
+
+
+function getDataSets(data, x, y, o, m) {
+  console.log(o)
+  console.log(m)
+  let america = {
+      label: "American",
+      backgroundColor: "rgba(255, 0, 0, 1)",
+      pointStyle: 'triangle',
+      radius: '5',
+      hoverRadius: '8',
+      data : []
+  }
+  let europe = {
+      label: "European",
+      backgroundColor: "rgba(0, 255, 0, 1)",
+      pointStyle: 'rect',
+      radius: '5',
+      hoverRadius: '8',
+      data: []
+  }
+  let japan = {
+      label: "Japanese",
+      backgroundColor: "rgba(0, 0, 255, 1)",
+      radius: '5',
+      hoverRadius: '8',
+      data: []
+  }
+
+  data.split('\n').map(function (l) {
+      let line = l.split(';')
+      let obj = {}
+      obj.x = line[x];
+      obj.y = line[y];
+      if(line[9].trim() === "American") {
+        if(m.includes(line[1].trim())) {
+          america.data.push(obj)
+        }
+      }
+      else if(line[9].trim() === "European") {
+        if(m.includes(line[1].trim())) {
+          europe.data.push(obj)
+        }
+      }
+      else if(line[9].trim() === "Japanese") {
+        if(m.includes(line[1].trim())) {
+          japan.data.push(obj)
+        }
+      }
+  });
+  let set = []
+  if (o.includes('america')) set.push(america)
+  if (o.includes('europe')) set.push(europe)
+  if (o.includes('japan')) set.push(japan)
+  return set;
+}
 
 function App() {
   const [x, setX] = useState("weight");
   const [y, setY] = useState("horsepower");
-  //let origins = ["america", "europe", "japan"];
-  const [origins, setOrigins] = useState(["america", "europe", "japan"]);
+  const [origins, setOrigins] = useState(ORIGINS);
+  const [manufacturers, setManufacturers] = useState(MANUFACTURERS);
+  const [data, setData] = useState({});
   
-  const handleSelect = (e, {value}, axis) => {
-    if (axis === "x") setX(value)
-    else if (axis === "y") setY(value)
+  const handleSelect = ({value}, key) => {
+    console.log(key, value)
+    if (key == "x") setX(value)
+    else if (key == "y") setY(value)
+    else if (key == "origins") setOrigins(value)
+    else if (key == "manufacturers") setManufacturers(value)
   }
 
-  const handleOrigins = (e, {value}) => {
-    console.log(value)
-    setOrigins(value)
-    console.log(origins)
-  }
+  useEffect(() => {
+    loadCSV().then((csv) => {
+        let DATA = getDataSets(csv, CATEGORIES[x], CATEGORIES[y], origins, manufacturers)
+
+        setData({
+            datasets: DATA
+        })
+    });
+  }, [x, y, origins, manufacturers]);
+
+
+
   return (
     <div className="content">
       <h1>Vizualization UE3</h1>
-      <Dropdown placeholder='Origin' onChange={(e, { value }) => handleOrigins(e, { value })} fluid multiple selection options={originsOptions} defaultValue={origins}/>
-      <Dropdown placeholder='X Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
-      <Dropdown placeholder='Y Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
+      <Dropdown placeholder='Origin' onChange={({ value }) => handleSelect({ value }, 'origins')} fluid multiple selection options={originsOptions} defaultValue={ORIGINS}/>
+      <Dropdown placeholder='Manufacturer' onChange={({ value }) => handleSelect({ value }, 'manufacturers')} fluid multiple selection options={manufacturersOptions} defaultValue={MANUFACTURERS}/>
+      <Dropdown placeholder='X Axis' onChange={({ value }) => handleSelect({ value }, 'x')} fluid selection options={axisOptions} value={x}/>
+      <Dropdown placeholder='Y Axis' onChange={({ value }) => handleSelect({ value }, 'y')} fluid selection options={axisOptions} value={y}/>
 
       {/* <Dropdown onSelect={(e) => handleSelect(e, "x")}>
         <Dropdown.Toggle variant="success" id="dropdown-basic">
@@ -91,7 +176,7 @@ function App() {
           <Dropdown.Item eventKey="6">{Object.keys(CATEGORIES)[6]}</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown> */}
-      <Chart x={x} y={y} origins={origins}/>
+      <Chart data={data}/>
     </div>
   );
 }
