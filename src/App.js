@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Chart from './Chart';
-import { Dropdown } from 'semantic-ui-react'
+import { Dropdown, Divider, Segment, Label, Grid } from 'semantic-ui-react'
 
 
 async function loadCSV() {
@@ -11,13 +11,13 @@ async function loadCSV() {
 }
 
 export const CATEGORIES = {
-  'consumption': 2,
-  'cylinders': 3,
-  'displacement': 4,
-  'horsepower': 5,
-  'weight': 6,
-  'acceleration': 7,
-  'year': 8
+  'Verbrauch': 2,
+  'Zylinder': 3,
+  'Hubraum': 4,
+  'Pferdestärken': 5,
+  'Gewicht': 6,
+  'Beschleunigung': 7,
+  'Baujahr': 8
 }
 
 export const ORIGINS = ['American', 'European', 'Japanese'];
@@ -80,32 +80,45 @@ function getDataSets(data, x, y, o, m) {
       data: []
   }
 
-  data.split('\n').map(function (l) {
-      let line = l.split(';')
-      let obj = {}
-      obj.x = line[x];
-      obj.y = line[y];
-      if(line[9].trim() === "American") {
-        if(m.includes(line[1].trim())) {
-          america.data.push(obj)
-        }
+  let allData = {
+    'American': [],
+    'European': [],
+    'Japanese': []
+  }
+
+  data.split('\n').slice(1).map(function (l) {
+    let line = l.split(';')
+    let obj = {}
+    obj.x = line[x];
+    obj.y = line[y];
+    if (!isNaN(line[2])) line[2] = (line[2] / 2.352).toFixed(2)
+    if (!isNaN(line[6])) line[6] = (line[6] / 2.205).toFixed(2)
+    if (!isNaN(line[4])) line[4] = (line[4] * 16.387).toFixed(2)
+
+    if (o.includes(line[9].trim()) && line[9].trim() === "American") {
+      if(m.includes(line[1].trim())) {
+        america.data.push(obj)
+        allData['American'].push(line);
       }
-      else if(line[9].trim() === "European") {
-        if(m.includes(line[1].trim())) {
-          europe.data.push(obj)
-        }
+    }
+    else if (o.includes(line[9].trim()) && line[9].trim() === "European") {
+      if(m.includes(line[1].trim())) {
+        europe.data.push(obj)
+        allData['European'].push(line);
       }
-      else if(line[9].trim() === "Japanese") {
-        if(m.includes(line[1].trim())) {
-          japan.data.push(obj)
-        }
+    }
+    else if (o.includes(line[9].trim()) && line[9].trim() === "Japanese") {
+      if(m.includes(line[1].trim())) {
+        japan.data.push(obj)
+        allData['Japanese'].push(line);
       }
+    }
   });
   let set = []
   if (o.includes('American')) set.push(america)
   if (o.includes('European')) set.push(europe)
   if (o.includes('Japanese')) set.push(japan)
-  return set;
+  return [set, allData];
 }
 
 function update(data, o) {
@@ -120,11 +133,12 @@ function update(data, o) {
 }
 
 function App() {
-  const [x, setX] = useState("weight");
-  const [y, setY] = useState("horsepower");
+  const [x, setX] = useState("Gewicht");
+  const [y, setY] = useState("Pferdestärken");
   const [origins, setOrigins] = useState(ORIGINS);
   const [manufacturers, setManufacturers] = useState(MANUFACTURERS);
   const [data, setData] = useState({});
+  const [extraData, setExtra] = useState({})
   
   const handleSelect = (e, {value}, key) => {
     if (key === "x") setX(value)
@@ -136,9 +150,9 @@ function App() {
   useEffect(() => {
     loadCSV().then((csv) => {
       let DATA = getDataSets(csv, CATEGORIES[x], CATEGORIES[y], origins, manufacturers)
-
+      setExtra(DATA[1])
       setData({
-          datasets: DATA
+          datasets: DATA[0]
       })
     });
   }, [x, y, manufacturers]);
@@ -152,12 +166,29 @@ function App() {
 
   return (
     <div className="content">
-      <h1>Vizualization UE3.1</h1>
-      <Dropdown placeholder='Origin' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} value={origins}/>
-      <Dropdown placeholder='Manufacturer' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection search options={manufacturersOptions} value={manufacturers}/>
-      <Dropdown placeholder='X Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
-      <Dropdown placeholder='Y Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
-      <Chart data={data}/>
+      <h1>Vizualization UE3</h1>
+      <Divider/>
+
+      <Grid>
+        <Grid.Row columns={2} padded centered>
+          <Grid.Column>
+            <Segment attached>
+              <Label attached="top">Herkunft</Label>
+              <Dropdown placeholder='Herkunft' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} value={origins} />
+            </Segment>
+          </Grid.Column>
+          <Grid.Column>
+            <Segment attached>
+              <Label attached="top">Hersteller</Label>
+              <Dropdown placeholder='Hersteller' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection search options={manufacturersOptions} value={manufacturers} />
+            </Segment>
+          </Grid.Column>
+        </Grid.Row>
+
+      </Grid>
+      <Dropdown placeholder='X Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
+      <Dropdown placeholder='Y Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
+      <Chart data={data} extra={extraData}/>
     </div>
   );
 }
