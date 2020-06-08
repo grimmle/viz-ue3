@@ -20,7 +20,7 @@ export const CATEGORIES = {
   'year': 8
 }
 
-export const ORIGINS = ['america', 'europe', 'japan'];
+export const ORIGINS = ['American', 'European', 'Japanese'];
 
 export const MANUFACTURERS = ['chevrolet', 'buick', 'plymouth', 'amc', 'ford', 'pontiac', 'citroen', 'dodge', 'toyota', 'datsun', 'vw', 'peugeot', 'audi', 'saab', 'bmw', 'hi', 'mercury', 'fiat', 'oldsmobile', 'chrysler', 'mazda', 'volvo', 'renault', 'honda', 'subaru', 'capri', 'mercedes', 'cadillac', 'triumph', 'nissan'];
 
@@ -56,7 +56,6 @@ MANUFACTURERS.forEach(function(value) {
 
 
 function getDataSets(data, x, y, o, m) {
-  console.log(o)
   console.log(m)
   let america = {
       label: "American",
@@ -104,10 +103,21 @@ function getDataSets(data, x, y, o, m) {
       }
   });
   let set = []
-  if (o.includes('america')) set.push(america)
-  if (o.includes('europe')) set.push(europe)
-  if (o.includes('japan')) set.push(japan)
+  if (o.includes('American')) set.push(america)
+  if (o.includes('European')) set.push(europe)
+  if (o.includes('Japanese')) set.push(japan)
   return set;
+}
+
+function update(data, o) {
+  let manus = [];
+  data.split('\n').map(function (l) {
+    let line = l.split(';')
+    if(o.includes(line[9].trim())) {
+        if(!manus.includes(line[1].trim())) manus.push(line[1].trim())
+    }
+  })
+  return manus;
 }
 
 function App() {
@@ -127,55 +137,29 @@ function App() {
 
   useEffect(() => {
     loadCSV().then((csv) => {
-        let DATA = getDataSets(csv, CATEGORIES[x], CATEGORIES[y], origins, manufacturers)
+      let DATA = getDataSets(csv, CATEGORIES[x], CATEGORIES[y], origins, manufacturers)
 
-        setData({
-            datasets: DATA
-        })
+      setData({
+          datasets: DATA
+      })
     });
-  }, [x, y, origins, manufacturers]);
+  }, [x, y, manufacturers]);
 
-
+  useEffect(() => {
+    loadCSV().then((csv) => {
+      let MANUS = update(csv, origins)
+      console.log(MANUS)
+      setManufacturers(MANUS)
+    })
+  }, [origins]);
 
   return (
     <div className="content">
       <h1>Vizualization UE3</h1>
-      <Dropdown placeholder='Origin' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} defaultValue={ORIGINS}/>
-      <Dropdown placeholder='Manufacturer' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection options={manufacturersOptions} defaultValue={MANUFACTURERS}/>
+      <Dropdown placeholder='Origin' onChange={(e, { value }) => handleSelect(e, { value }, 'origins')} fluid multiple selection options={originsOptions} value={origins}/>
+      <Dropdown placeholder='Manufacturer' onChange={(e, { value }) => handleSelect(e, { value }, 'manufacturers')} fluid multiple selection options={manufacturersOptions} value={manufacturers}/>
       <Dropdown placeholder='X Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
       <Dropdown placeholder='Y Axis' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
-
-      {/* <Dropdown onSelect={(e) => handleSelect(e, "x")}>
-        <Dropdown.Toggle variant="success" id="dropdown-basic">
-          { x }
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu>
-          <Dropdown.Item eventKey="0">{Object.keys(CATEGORIES)[0]}</Dropdown.Item>
-          <Dropdown.Item eventKey="1">{Object.keys(CATEGORIES)[1]}</Dropdown.Item>
-          <Dropdown.Item eventKey="2">{Object.keys(CATEGORIES)[2]}</Dropdown.Item>
-          <Dropdown.Item eventKey="3">{Object.keys(CATEGORIES)[3]}</Dropdown.Item>
-          <Dropdown.Item eventKey="4">{Object.keys(CATEGORIES)[4]}</Dropdown.Item>
-          <Dropdown.Item eventKey="5">{Object.keys(CATEGORIES)[5]}</Dropdown.Item>
-          <Dropdown.Item eventKey="6">{Object.keys(CATEGORIES)[6]}</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-
-      <Dropdown onSelect={(e) => handleSelect(e, "y")}>
-        <Dropdown.Toggle variant="success" id="dropdown-basic">
-          { y }
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu>
-          <Dropdown.Item eventKey="0">{Object.keys(CATEGORIES)[0]}</Dropdown.Item>
-          <Dropdown.Item eventKey="1">{Object.keys(CATEGORIES)[1]}</Dropdown.Item>
-          <Dropdown.Item eventKey="2">{Object.keys(CATEGORIES)[2]}</Dropdown.Item>
-          <Dropdown.Item eventKey="3">{Object.keys(CATEGORIES)[3]}</Dropdown.Item>
-          <Dropdown.Item eventKey="4">{Object.keys(CATEGORIES)[4]}</Dropdown.Item>
-          <Dropdown.Item eventKey="5">{Object.keys(CATEGORIES)[5]}</Dropdown.Item>
-          <Dropdown.Item eventKey="6">{Object.keys(CATEGORIES)[6]}</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown> */}
       <Chart data={data}/>
     </div>
   );
