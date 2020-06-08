@@ -56,7 +56,6 @@ MANUFACTURERS.forEach(function(value) {
 
 
 function getDataSets(data, x, y, o, m) {
-  console.log(m)
   let america = {
       label: "American",
       backgroundColor: "rgba(255, 0, 0, 1)",
@@ -128,7 +127,6 @@ function App() {
   const [data, setData] = useState({});
   
   const handleSelect = (e, {value}, key) => {
-    console.log(key, value)
     if (key == "x") setX(value)
     else if (key == "y") setY(value)
     else if (key == "origins") setOrigins(value)
@@ -148,7 +146,6 @@ function App() {
   useEffect(() => {
     loadCSV().then((csv) => {
       let MANUS = update(csv, origins)
-      console.log(MANUS)
       setManufacturers(MANUS)
     })
   }, [origins]);
