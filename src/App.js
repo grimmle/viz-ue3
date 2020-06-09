@@ -12,13 +12,13 @@ async function loadCSV() {
 }
 
 export const CATEGORIES = {
-  'Verbrauch': 2,
-  'Zylinder': 3,
-  'Hubraum': 4,
-  'Pferdestärken': 5,
-  'Gewicht': 6,
-  'Beschleunigung': 7,
-  'Baujahr': 8
+  'Verbrauch': [2, 'km/l'],
+  'Zylinder': [3, 'Anzahl'],
+  'Hubraum': [4, 'ccm'],
+  'Pferdestärken': [5, 'PS'],
+  'Gewicht': [6, 'kg'],
+  'Beschleunigung': [7, 'Sekunden für 0-60mph'],
+  'Baujahr': [8, 'Jahr']
 }
 
 export const ORIGINS = ['American', 'European', 'Japanese'];
@@ -159,7 +159,7 @@ function App() {
 
   useEffect(() => {
     loadCSV().then((csv) => {
-      let DATA = getDataSets(csv, CATEGORIES[x], CATEGORIES[y], origins, manufacturers)
+      let DATA = getDataSets(csv, CATEGORIES[x][0], CATEGORIES[y][0], origins, manufacturers)
       setExtra(DATA[1])
       setData({
           datasets: DATA[0]
@@ -203,7 +203,7 @@ function App() {
           </Grid.Column>
           <Grid.Column width={13}>
             <div className="charty">
-              <ScatterChart data={data} extra={extraData} onRadarDataChanged={handleRadarData}/>
+              <ScatterChart data={data} extra={extraData} yLabel={CATEGORIES[y][1]} xLabel={CATEGORIES[x][1]}/>
             </div>
           </Grid.Column>
         </Grid.Row>
@@ -212,10 +212,7 @@ function App() {
             <Dropdown placeholder='X Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x} />
           </Grid.Column>
         </Grid.Row>
-        
       </Grid>
-
-
     </div>
   );
 }
