@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import Chart from './Chart';
+import ScatterChart from './ScatterChart';
+import RadarChart from './RadarChart';
 import { Dropdown, Divider, Segment, Label, Grid } from 'semantic-ui-react'
 
 
@@ -23,7 +24,6 @@ export const CATEGORIES = {
 export const ORIGINS = ['American', 'European', 'Japanese'];
 
 export const MANUFACTURERS = ['chevrolet', 'buick', 'plymouth', 'amc', 'ford', 'pontiac', 'citroen', 'dodge', 'toyota', 'datsun', 'vw', 'peugeot', 'audi', 'saab', 'bmw', 'hi', 'mercury', 'fiat', 'oldsmobile', 'chrysler', 'mazda', 'volvo', 'renault', 'honda', 'subaru', 'capri', 'mercedes', 'cadillac', 'triumph', 'nissan'];
-
 
 let axisOptions = []
 for (var key in CATEGORIES) {
@@ -91,9 +91,9 @@ function getDataSets(data, x, y, o, m) {
     let obj = {}
     obj.x = line[x];
     obj.y = line[y];
-    if (!isNaN(line[2])) line[2] = (line[2] / 2.352).toFixed(2)
-    if (!isNaN(line[6])) line[6] = (line[6] / 2.205).toFixed(2)
-    if (!isNaN(line[4])) line[4] = (line[4] * 16.387).toFixed(2)
+    // if (!isNaN(line[2])) line[2] = (line[2] / 2.352).toFixed(2)
+    // if (!isNaN(line[4])) line[4] = (line[4] * 16.387).toFixed(2)
+    // if (!isNaN(line[6])) line[6] = (line[6] / 2.205).toFixed(2)
 
     if (o.includes(line[9].trim()) && line[9].trim() === "American") {
       if(m.includes(line[1].trim())) {
@@ -135,10 +135,20 @@ function update(data, o) {
 function App() {
   const [x, setX] = useState("Gewicht");
   const [y, setY] = useState("Pferdestärken");
-  const [origins, setOrigins] = useState(ORIGINS);
+  const [origins, setOrigins] = useState(['European', 'Japanese']);
   const [manufacturers, setManufacturers] = useState(MANUFACTURERS);
   const [data, setData] = useState({});
   const [extraData, setExtra] = useState({})
+
+  const [radarData, setRadarData] = useState({});
+
+  function handleRadarData(data) {
+    let labels = ['Verbrauch', 'Zylinder', 'Hubraum', 'Pferdestärken', 'Gewicht', 'Beschleunigung', 'Baujahr']
+    setRadarData({
+      labels: labels, 
+      datasets: [data]
+    })
+  }
   
   const handleSelect = (e, {value}, key) => {
     if (key === "x") setX(value)
@@ -184,11 +194,28 @@ function App() {
             </Segment>
           </Grid.Column>
         </Grid.Row>
-
       </Grid>
-      <Dropdown placeholder='X Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x}/>
-      <Dropdown placeholder='Y Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y}/>
-      <Chart data={data} extra={extraData}/>
+
+      <Grid>
+        <Grid.Row padded>
+          <Grid.Column width={3} padded>
+            <Dropdown placeholder='Y Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'y')} fluid selection options={axisOptions} value={y} />
+          </Grid.Column>
+          <Grid.Column width={13}>
+            <div className="charty">
+              <ScatterChart data={data} extra={extraData} onRadarDataChanged={handleRadarData}/>
+            </div>
+          </Grid.Column>
+        </Grid.Row>
+        <Grid.Row padded>
+          <Grid.Column width={3} floated='right'>
+            <Dropdown placeholder='X Achse' onChange={(e, { value }) => handleSelect(e, { value }, 'x')} fluid selection options={axisOptions} value={x} />
+          </Grid.Column>
+        </Grid.Row>
+        
+      </Grid>
+
+
     </div>
   );
 }

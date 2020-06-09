@@ -1,10 +1,17 @@
 .content {
-  margin: 20px;
-}
-
-.chart-container {
+  padding: 20px;
+  margin: 0;
+  height: 100vh;
 }
 
 .ui.segment {
   padding: 0
+}
+
+.chart-container {
+  height: 600px
+}
+
+.row {
+  margin-left: 0
 }
