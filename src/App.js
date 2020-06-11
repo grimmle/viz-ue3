@@ -135,7 +135,7 @@ function update(data, o) {
 function App() {
   const [x, setX] = useState("Gewicht");
   const [y, setY] = useState("Pferdestärken");
-  const [origins, setOrigins] = useState(['European', 'Japanese']);
+  const [origins, setOrigins] = useState(['American', 'European', 'Japanese']);
   const [manufacturers, setManufacturers] = useState(MANUFACTURERS);
   const [data, setData] = useState({});
   const [extraData, setExtra] = useState({})
