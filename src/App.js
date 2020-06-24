@@ -176,7 +176,7 @@ function App() {
 
   return (
     <div className="content">
-      <h1>Vizualization UE3</h1>
+      <h1>Visualization UE3</h1>
       <Divider/>
 
       <Grid>
